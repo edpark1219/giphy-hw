@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Food Search</title>
+    <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+        margin: 10px;
+    }
+    </style>
+</head>
+
+<body>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <div class="container">
+        <h1>Food Search</h1>
+        <!-- Foods will get dumped here -->
+        <div id="food-view"></div>
+        <form id="food-form">
+            <label for="food-input">Add a Food</label>
+            <input type="text" id="food-input">
+            <br>
+            <!-- Button triggers new movie to be added -->
+            <input id="add-food" type="submit" value="Add a Food">
+        </form>
+        <div id="images"></div>
+    </div>
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript">
+    var topics = ["pizza", "hamburger", "fries"];
+
+    function renderButtons() {
+        $("#food-view").empty();
+
+        for (var i = 0; i < topics.length; i++) {
+            var a = $("<button>");
+            a.addClass("food");
+            a.addClass("btn btn-default")
+            a.attr("data-name", topics[i]);
+            a.text(topics[i]);
+            $("#food-view").append(a);
+        }
+
+    }
+
+    $("#add-food").on("click", function(event) {
+        event.preventDefault();
+        var food = $("#food-input").val().trim();
+        topics.push(food);
+        renderButtons();
+    });
+
+    function displayFood() {
+        var food = $(this).attr("data-name");
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + food + "&api_key=dc6zaTOxFJmzC";
+
+        $.ajax({
+            url: queryURL,
+            method: 'GET'
+        }).done(function(response) {
+            console.log(response);
+            for (var i = 0; i < 10; i++) {
+
+
+                var foodDiv = $("<div>");
+                var rating = response.data[i].rating;
+                var foodImage = $("<img>");
+                var imageURL = response.data[i].images.fixed_height_still.url;
+                foodImage.attr("src", imageURL);
+                foodImage.addClass("gif");
+                foodImage.attr("alt", "food image");
+                foodImage.attr("data-state", "still");
+                foodDiv.html(foodImage);
+                foodDiv.append("<br>" + rating);
+                $("#images").prepend(foodDiv);
+            }
+
+        });
+
+    }
+
+    $(document).on("click", ".gif", function() {
+    	var state = $(this).attr("data-state");
+    	console.log(state);
+    	if (state === "still") {
+
+    		var newSRC = $(this).attr("src").slice(0, -6);
+    		console.log(newSRC);
+    		newSRC += ".gif";
+    		console.log(newSRC);
+    		$(this).attr("src", newSRC);
+    		$(this).attr("data-state", "animate")
+    	}
+    	else {
+    		var newSRC = $(this).attr("src").slice(0, -4);
+    		newSRC += "_s.gif";
+    		$(this).attr("src", newSRC);
+    		$(this).attr("data-state", "still");
+    	}
+
+    });
+
+    $(document).on("click", ".food", displayFood);
+
+    renderButtons();
+    </script>
+</body>
+
+</html>
